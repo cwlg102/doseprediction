@@ -206,6 +206,9 @@ if __name__ == "__main__":
     plan_rs_dirs_list = os.listdir(plan_rs_basepath)
     
     for idx in range(100):
+        if idx < 52:
+            continue
+        
         what = str(ws.cell(idx+1, 2).value)
         if what is not None:
             pass 
@@ -288,16 +291,19 @@ if __name__ == "__main__":
                 pass 
             else:
                 if "Z" not in str(ssr.ROIName):
-                    ctr_arr = np.zeros_like(mr_arr)
-                    for ctr_data in rcs.ContourSequence:
-                        co = np.array(ctr_data.ContourData)
-                        co = np.reshape(co, (len(co)//3, 3))
-                        co_raster = np.int32(np.round((co - origin)/(spacing)))
-                        co_raster_x = co_raster[:, 0]
-                        co_raster_y = co_raster[:, 1]
-                        co_filled_y, co_filled_x = polygon(co_raster_y, co_raster_x)
-                        ctr_arr[co_raster[0][2], co_filled_y, co_filled_x] = 1
-                    oar_dict[str(ssr.ROIName).lower()] = ctr_arr
+                    try:
+                        ctr_arr = np.zeros_like(mr_arr)
+                        for ctr_data in rcs.ContourSequence:
+                            co = np.array(ctr_data.ContourData)
+                            co = np.reshape(co, (len(co)//3, 3))
+                            co_raster = np.int32(np.round((co - origin)/(spacing)))
+                            co_raster_x = co_raster[:, 0]
+                            co_raster_y = co_raster[:, 1]
+                            co_filled_y, co_filled_x = polygon(co_raster_y, co_raster_x)
+                            ctr_arr[co_raster[0][2], co_filled_y, co_filled_x] = 1
+                        oar_dict[str(ssr.ROIName).lower()] = ctr_arr
+                    except:
+                        continue
                     
                 else:
                     continue
@@ -341,7 +347,9 @@ if __name__ == "__main__":
         sitk.WriteImage(ptv_itk, os.path.join(r"G:\! project\2024- UnityDosePrediction\data\processed_data\PTV", "P%03d_" %(idx) + MRN + "_ptv.nii.gz"))
         sitk.WriteImage(mr_itk, os.path.join(r"G:\! project\2024- UnityDosePrediction\data\processed_data\MR", "P%03d_" %(idx) + MRN + "_mr.nii.gz"))
         sitk.WriteImage(ct_itk, os.path.join(r"G:\! project\2024- UnityDosePrediction\data\processed_data\CT", "P%03d_" %(idx) + MRN + "_ct.nii.gz"))
-        sitk.WriteImage(dose_itk, os.path.join(r"G:\! project\2024- UnityDosePrediction\data\processed_data\DOSE", "P%03d_" %(idx) + MRN + "_dose.nii.gz"))
+        #######################################################################################################################################################
+        sitk.WriteImage(dose_new_itk, os.path.join(r"G:\! project\2024- UnityDosePrediction\data\processed_data\DOSE", "P%03d_" %(idx) + MRN + "_dose.nii.gz"))
+        ############################################################################################################################################################
         BEAM_SAVEPATH = r"G:\! project\2024- UnityDosePrediction\data\processed_data\BEAM"
         os.makedirs(os.path.join(BEAM_SAVEPATH, "P%03d_" %(idx) + MRN), exist_ok=True)
         OAR_SAVEPATH = r"G:\! project\2024- UnityDosePrediction\data\processed_data\OAR"
@@ -350,7 +358,7 @@ if __name__ == "__main__":
             oar_itk = sitk.GetImageFromArray(val)
             oar_itk.SetOrigin(origin)
             oar_itk.SetSpacing(spacing)
-            sitk.WriteImage(os.path.join(OAR_SAVEPATH, "P%03d_" %(idx) + MRN, "P%03d_" %(idx) + MRN + "_%s.nii.gz" %(key)))
+            sitk.WriteImage(oar_itk, os.path.join(OAR_SAVEPATH, "P%03d_" %(idx) + MRN, "P%03d_" %(idx) + MRN + "_%s.nii.gz" %(key)))
         ptv_original_arr = np.copy(ptv_arr)
         
         import time
@@ -486,7 +494,7 @@ if __name__ == "__main__":
             line_itk.SetOrigin(mr_itk.GetOrigin())
             sitk.WriteImage(line_itk, os.path.join(BEAM_SAVEPATH, "P%03d_" %(idx)+MRN, "P%03d_"%(idx) + MRN +"_beamline_%03d.nii.gz" %(int(gantry_angle))))
         
-      
+        # break
     
 
     
